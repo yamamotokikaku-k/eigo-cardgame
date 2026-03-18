@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>えいごカードぶんづくりゲーム</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    :root{
+      --bg1:#fffaf0;
+      --bg2:#f7fbff;
+      --panel:#ffffffcc;
+      --line:#d9e2f1;
+      --text:#24324a;
+      --sub:#5e6c84;
+      --accent:#5b8def;
+      --accent2:#7fd6c2;
+      --good:#28a745;
+      --bad:#d64545;
+      --shadow:0 12px 32px rgba(54, 89, 140, 0.12);
+      --cardShadow:0 8px 18px rgba(54, 89, 140, 0.14);
+    }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      font-family:
+        "Hiragino Kaku Gothic ProN",
+        "Yu Gothic",
+        "Meiryo",
+        sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, #fff6d9 0%, transparent 35%),
+        radial-gradient(circle at top right, #dff4ff 0%, transparent 35%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+    }
+
+    body.shake {
+      animation: shake 0.28s linear;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(6px); }
+      100% { transform: translateX(0); }
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px 16px 28px;
+    }
+
+    .header {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 18px 18px 14px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 38px);
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      text-align: center;
+      color: var(--sub);
+      font-size: clamp(13px, 2vw, 16px);
+      line-height: 1.7;
+    }
+
+    .topbar {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .stat {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 12px;
+      text-align: center;
+      box-shadow: var(--cardShadow);
+    }
+
+    .statLabel {
+      font-size: 12px;
+      color: var(--sub);
+      margin-bottom: 6px;
+    }
+
+    .statValue {
+      font-size: clamp(18px, 3vw, 28px);
+      font-weight: 700;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: clamp(20px, 3vw, 28px);
+    }
+
+    .help {
+      color: var(--sub);
+      font-size: 14px;
+      line-height: 1.7;
+      margin-bottom: 14px;
+    }
+
+    .sentenceArea {
+      min-height: 150px;
+      border: 2px dashed #bfd0ee;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #ffffff, #f6fbff);
+      padding: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-content: flex-start;
+    }
+
+    .sentenceArea.empty::before {
+      content: "したのカードをおして ぶん を つくろう";
+      color: #88a0c8;
+      font-weight: 700;
+      font-size: clamp(16px, 2.4vw, 22px);
+      width: 100%;
+      text-align: center;
+      align-self: center;
+      margin: auto 0;
+    }
+
+    .cardsArea {
+      margin-top: 14px;
+      border-radius: 22px;
+      background: #ffffffd8;
+      border: 1px solid var(--line);
+      padding: 12px;
+      min-height: 160px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-content: flex-start;
+    }
+
+    .card {
+      border: none;
+      border-radius: 18px;
+      min-width: 92px;
+      padding: 14px 18px;
+      font-size: clamp(20px, 2.7vw, 30px);
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      background: #fff;
+      color: var(--text);
+      box-shadow: var(--cardShadow);
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+      user-select: none;
+    }
+
+    .card:hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .card:active {
+      transform: translateY(1px) scale(0.99);
+    }
+
+    .card.subject { background: #eef5ff; }
+    .card.verb { background: #eefdf5; }
+    .card.possessive { background: #fff8e8; }
+    .card.object { background: #fff0f4; }
+    .card.extra { background: #f4efff; }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 16px;
+      padding: 12px 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--cardShadow);
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(1px); }
+
+    .btnPrimary {
+      background: linear-gradient(135deg, var(--accent), #78a8ff);
+      color: white;
+    }
+
+    .btnSoft {
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .btnGood {
+      background: linear-gradient(135deg, var(--good), #44c767);
+      color: white;
+    }
+
+    .goalBox {
+      background: linear-gradient(180deg, #ffffff, #f7fbff);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .goalLabel {
+      color: var(--sub);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .goalSentence {
+      font-size: clamp(22px, 3.4vw, 34px);
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .goalMeaning {
+      margin-top: 8px;
+      font-size: clamp(14px, 2vw, 18px);
+      color: var(--sub);
+      line-height: 1.6;
+    }
+
+    .feedback {
+      min-height: 72px;
+      border-radius: 18px;
+      padding: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .feedback.good {
+      border-color: #b7e3c2;
+      background: #f1fff5;
+    }
+
+    .feedback.bad {
+      border-color: #efb8b8;
+      background: #fff4f4;
+    }
+
+    .listTitle {
+      margin: 16px 0 8px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .tips {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--sub);
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .mini {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .miniBox {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 12px;
+    }
+
+    .miniBox .small {
+      color: var(--sub);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .miniBox .big {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .footerNote {
+      margin-top: 14px;
+      color: var(--sub);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 860px) {
+      .main {
+        grid-template-columns: 1fr;
+      }
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+      .mini {
+        grid-template-columns: 1fr;
+      }
+      .card {
+        min-width: 78px;
+        padding: 12px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="header">
+      <h1 class="title">えいごカード ぶんづくりゲーム</h1>
+      <p class="subtitle">
+        したのカードを ならべて、もくひょうの えいぶん を つくるゲームです。<br>
+        こたえと おなじ ならび に なれば せいかい です。
+      </p>
+
+      <div class="topbar">
+        <div class="stat">
+          <div class="statLabel">もんだい</div>
+          <div class="statValue"><span id="questionNo">1</span> / <span id="totalQuestions">10</span></div>
+        </div>
+        <div class="stat">
+          <div class="statLabel">せいかい</div>
+          <div class="statValue" id="score">0</div>
+        </div>
+        <div class="stat">
+          <div class="statLabel">れんぞく せいかい</div>
+          <div class="statValue" id="streak">0</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="main">
+      <section class="panel">
+        <h2>カードを ならべる</h2>
+        <div class="help">
+          カードをおすと 上のエリアに うつります。<br>
+          もういちど おすと もどせます。
+        </div>
+
+        <div id="sentenceArea" class="sentenceArea empty"></div>
+
+        <div class="controls">
+          <button class="btn btnSoft" id="undoBtn">ひとつ もどす</button>
+          <button class="btn btnSoft" id="resetBtn">さいしょから</button>
+          <button class="btn btnGood" id="checkBtn">こたえあわせ</button>
+        </div>
+
+        <div id="cardsArea" class="cardsArea"></div>
+      </section>
+
+      <section class="panel">
+        <h2>もくひょう</h2>
+
+        <div class="goalBox">
+          <div class="goalLabel">この えいぶん を つくろう</div>
+          <div class="goalSentence" id="goalSentence">This is my car.</div>
+          <div class="goalMeaning" id="goalMeaning">これは わたしの くるまです。</div>
+        </div>
+
+        <div id="feedback" class="feedback">
+          まだ こたえあわせ を していません。
+        </div>
+
+        <div class="mini">
+          <div class="miniBox">
+            <div class="small">いま つくった ぶん</div>
+            <div class="big" id="currentSentence">---</div>
+          </div>
+          <div class="miniBox">
+            <div class="small">つぎの レベルの イメージ</div>
+            <div class="big" id="nextHint">ながい ぶん や じょうほうの おおい ぶん に ひろげられます。</div>
+          </div>
+        </div>
+
+        <div class="listTitle">あそびかた</div>
+        <ul class="tips">
+          <li>もくひょうの ぶん と おなじ じゅんばん に カードを ならべます。</li>
+          <li>せいかい すると つぎの もんだい に すすめます。</li>
+          <li>まちがえる と 画面が ぶるっと ゆれます。</li>
+        </ul>
+
+        <div class="footerNote">
+          試作として、まずは かんたんな文のならびを学ぶ形にしています。<br>
+          あとで「I like dogs.」「This is a big car.」のような長文や加点方式にも広げやすい構造です。
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const problems = [
+      {
+        sentence: ["this", "is", "my", "car"],
+        display: "This is my car.",
+        meaning: "これは わたしの くるまです。",
+        nextHint: "つぎは this / is / my / dog のように 名詞を かえて あそべます。"
+      },
+      {
+        sentence: ["this", "is", "my", "dog"],
+        display: "This is my dog.",
+        meaning: "これは わたしの いぬです。",
+        nextHint: "主語は this のまま、ものの 名前を かえる 練習に つながります。"
+      },
+      {
+        sentence: ["this", "is", "my", "book"],
+        display: "This is my book.",
+        meaning: "これは わたしの ほんです。",
+        nextHint: "「my + 名詞」の かたまりを 感覚で おぼえられます。"
+      },
+      {
+        sentence: ["this", "is", "my", "apple"],
+        display: "This is my apple.",
+        meaning: "これは わたしの りんごです。",
+        nextHint: "身近な ものを まぜると 子ども向け教材として 広げやすいです。"
+      },
+      {
+        sentence: ["this", "is", "my", "bike"],
+        display: "This is my bike.",
+        meaning: "これは わたしの じてんしゃです。",
+        nextHint: "乗り物や 動物、家具などのカテゴリ追加にも つなげられます。"
+      },
+      {
+        sentence: ["this", "is", "my", "chair"],
+        display: "This is my chair.",
+        meaning: "これは わたしの いすです。",
+        nextHint: "同じ型の文を 何度も くりかえすことで 語順の型が 定着します。"
+      },
+      {
+        sentence: ["this", "is", "my", "bag"],
+        display: "This is my bag.",
+        meaning: "これは わたしの かばんです。",
+        nextHint: "今後は 制限時間や スコア加点も 入れられます。"
+      },
+      {
+        sentence: ["this", "is", "my", "cat"],
+        display: "This is my cat.",
+        meaning: "これは わたしの ねこです。",
+        nextHint: "同じ文型で 単語だけ変えると 難易度調整が しやすいです。"
+      },
+      {
+        sentence: ["this", "is", "my", "desk"],
+        display: "This is my desk.",
+        meaning: "これは わたしの つくえです。",
+        nextHint: "将来的には adjective カードを 足して big desk などにも できます。"
+      },
+      {
+        sentence: ["this", "is", "my", "toy"],
+        display: "This is my toy.",
+        meaning: "これは わたしの おもちゃです。",
+        nextHint: "完成形では 長い文ほど 高得点にする設計へ 発展できます。"
+      }
+    ];
+
+    const typeClassMap = {
+      this: "subject",
+      is: "verb",
+      my: "possessive",
+      car: "object",
+      dog: "object",
+      book: "object",
+      apple: "object",
+      bike: "object",
+      chair: "object",
+      bag: "object",
+      cat: "object",
+      desk: "object",
+      toy: "object"
+    };
+
+    let currentProblemIndex = 0;
+    let placedCards = [];
+    let handCards = [];
+    let score = 0;
+    let streak = 0;
+
+    const questionNoEl = document.getElementById("questionNo");
+    const totalQuestionsEl = document.getElementById("totalQuestions");
+    const scoreEl = document.getElementById("score");
+    const streakEl = document.getElementById("streak");
+    const goalSentenceEl = document.getElementById("goalSentence");
+    const goalMeaningEl = document.getElementById("goalMeaning");
+    const nextHintEl = document.getElementById("nextHint");
+    const sentenceAreaEl = document.getElementById("sentenceArea");
+    const cardsAreaEl = document.getElementById("cardsArea");
+    const feedbackEl = document.getElementById("feedback");
+    const currentSentenceEl = document.getElementById("currentSentence");
+    const undoBtn = document.getElementById("undoBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const checkBtn = document.getElementById("checkBtn");
+
+    totalQuestionsEl.textContent = problems.length;
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function normalizeSentence(words) {
+      return words.join(" ").trim().toLowerCase();
+    }
+
+    function makeCardButton(word, fromPlacedArea = false, index = 0) {
+      const btn = document.createElement("button");
+      btn.className = `card ${typeClassMap[word] || "extra"}`;
+      btn.textContent = word;
+      btn.setAttribute("type", "button");
+
+      if (fromPlacedArea) {
+        btn.addEventListener("click", () => {
+          const returned = placedCards.splice(index, 1)[0];
+          handCards.push(returned);
+          render();
+        });
+      } else {
+        btn.addEventListener("click", () => {
+          const chosen = handCards.splice(index, 1)[0];
+          placedCards.push(chosen);
+          render();
+        });
+      }
+
+      return btn;
+    }
+
+    function renderSentenceArea() {
+      sentenceAreaEl.innerHTML = "";
+      if (placedCards.length === 0) {
+        sentenceAreaEl.classList.add("empty");
+      } else {
+        sentenceAreaEl.classList.remove("empty");
+        placedCards.forEach((word, index) => {
+          sentenceAreaEl.appendChild(makeCardButton(word, true, index));
+        });
+      }
+      currentSentenceEl.textContent = placedCards.length ? placedCards.join(" ") : "---";
+    }
+
+    function renderCardsArea() {
+      cardsAreaEl.innerHTML = "";
+      handCards.forEach((word, index) => {
+        cardsAreaEl.appendChild(makeCardButton(word, false, index));
+      });
+    }
+
+    function renderStatus() {
+      questionNoEl.textContent = currentProblemIndex + 1;
+      scoreEl.textContent = score;
+      streakEl.textContent = streak;
+
+      const p = problems[currentProblemIndex];
+      goalSentenceEl.textContent = p.display;
+      goalMeaningEl.textContent = p.meaning;
+      nextHintEl.textContent = p.nextHint;
+    }
+
+    function render() {
+      renderStatus();
+      renderSentenceArea();
+      renderCardsArea();
+    }
+
+    function playTone(kind) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+
+      const ctx = new AudioContextClass();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      if (kind === "good") {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(659.25, ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.001, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+      } else {
+        osc.type = "square";
+        osc.frequency.setValueAtTime(180, ctx.currentTime);
+        gain.gain.setValueAtTime(0.001, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.16);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.18);
+      }
+    }
+
+    function triggerShake() {
+      document.body.classList.remove("shake");
+      void document.body.offsetWidth;
+      document.body.classList.add("shake");
+    }
+
+    function setFeedback(message, type = "") {
+      feedbackEl.className = "feedback";
+      if (type) feedbackEl.classList.add(type);
+      feedbackEl.innerHTML = message;
+    }
+
+    function nextProblem() {
+      currentProblemIndex++;
+
+      if (currentProblemIndex >= problems.length) {
+        currentProblemIndex = problems.length - 1;
+        placedCards = [];
+        handCards = [];
+
+        render();
+
+        setFeedback(
+          `ぜんぶ クリアしました。<br>
+          せいかい した かず：<strong>${score}</strong> / ${problems.length}<br>
+          もういちど あそぶ ときは ページを さい読みこみ してください。`,
+          "good"
+        );
+
+        checkBtn.disabled = true;
+        undoBtn.disabled = true;
+        resetBtn.disabled = true;
+        cardsAreaEl.innerHTML = "";
+        sentenceAreaEl.innerHTML = "";
+        sentenceAreaEl.classList.add("empty");
+        currentSentenceEl.textContent = "---";
+        return;
+      }
+
+      loadProblem();
+      setFeedback("せいかいです。つぎの もんだいに いきました。", "good");
+    }
+
+    function loadProblem() {
+      const p = problems[currentProblemIndex];
+      placedCards = [];
+      handCards = shuffle(p.sentence);
+      render();
+    }
+
+    function checkAnswer() {
+      const target = normalizeSentence(problems[currentProblemIndex].sentence);
+      const current = normalizeSentence(placedCards);
+
+      if (placedCards.length !== problems[currentProblemIndex].sentence.length) {
+        setFeedback(
+          "カードの まいすうが たりません。もくひょうの ぶんと おなじ かずだけ ならべてください。",
+          "bad"
+        );
+        playTone("bad");
+        triggerShake();
+        return;
+      }
+
+      if (current === target) {
+        score++;
+        streak++;
+        render();
+        playTone("good");
+        setFeedback(
+          `せいかいです。<br><strong>${problems[currentProblemIndex].display}</strong>`,
+          "good"
+        );
+        setTimeout(nextProblem, 700);
+      } else {
+        streak = 0;
+        render();
+        playTone("bad");
+        triggerShake();
+        setFeedback(
+          `ちがいます。<br>
+          いまの ぶん：<strong>${placedCards.join(" ")}</strong><br>
+          ならびを みなおして ください。`,
+          "bad"
+        );
+      }
+    }
+
+    undoBtn.addEventListener("click", () => {
+      if (placedCards.length === 0) return;
+      const last = placedCards.pop();
+      handCards.push(last);
+      render();
+    });
+
+    resetBtn.addEventListener("click", () => {
+      const p = problems[currentProblemIndex];
+      placedCards = [];
+      handCards = shuffle(p.sentence);
+      render();
+      setFeedback("カードを もとの じょうたいに もどしました。");
+    });
+
+    checkBtn.addEventListener("click", checkAnswer);
+
+    loadProblem();
+  </script>
+</body>
+</html>
