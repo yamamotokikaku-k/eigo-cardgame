@@ -1,590 +1,159 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>えいごカードならべ</title>
-  <style>
-    * { box-sizing: border-box; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>えいごカードならべ</title>
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:#f7f7f7;font-family:sans-serif;color:#111;}
+.wrap{max-width:700px;margin:0 auto;padding:20px;}
+.panel{background:#fff;border-radius:20px;padding:20px;box-shadow:0 6px 20px rgba(0,0,0,0.06);}
+.title{text-align:center;margin-bottom:10px;font-weight:bold;}
+.prompt{text-align:center;font-size:28px;font-weight:bold;margin:10px 0;}
+.hint{text-align:center;color:#666;font-size:14px;margin-bottom:10px;}
 
-    :root{
-      --bg:#f7f7f7;
-      --panel:#ffffff;
-      --line:#dcdcdc;
-      --text:#1f1f1f;
-      --sub:#666666;
-      --accent:#111111;
-      --good:#1f7a37;
-      --bad:#b42318;
-      --goodBg:#eef9f0;
-      --badBg:#fff1f1;
-      --shadow:0 8px 24px rgba(0,0,0,0.06);
-    }
+.answer{min-height:100px;border:2px dashed #ccc;border-radius:16px;padding:10px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.cards{margin-top:15px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
 
-    html, body {
-      margin: 0;
-      width: 100%;
-      min-height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family:
-        "Hiragino Kaku Gothic ProN",
-        "Yu Gothic",
-        "Meiryo",
-        sans-serif;
-    }
+.card{padding:12px 16px;border:1px solid #ccc;border-radius:12px;font-size:22px;font-weight:bold;background:#fff;cursor:pointer;}
+.card:active{transform:scale(0.95);}
 
-    body.shake {
-      animation: shake 0.28s linear;
-    }
+.feedback{margin-top:15px;text-align:center;font-size:16px;}
 
-    @keyframes shake {
-      0% { transform: translateX(0); }
-      20% { transform: translateX(-8px); }
-      40% { transform: translateX(8px); }
-      60% { transform: translateX(-6px); }
-      80% { transform: translateX(6px); }
-      100% { transform: translateX(0); }
-    }
-
-    .wrap {
-      width: 100%;
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 20px 16px 32px;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 24px;
-      box-shadow: var(--shadow);
-      padding: 20px;
-    }
-
-    .top {
-      text-align: center;
-      margin-bottom: 16px;
-    }
-
-    .title {
-      margin: 0 0 14px;
-      font-size: clamp(20px, 3.2vw, 28px);
-      font-weight: 700;
-      letter-spacing: 0.02em;
-    }
-
-    .promptLabel {
-      font-size: 13px;
-      color: var(--sub);
-      margin-bottom: 8px;
-    }
-
-    .prompt {
-      font-size: clamp(28px, 5vw, 44px);
-      font-weight: 800;
-      line-height: 1.4;
-      margin: 0;
-      word-break: break-word;
-    }
-
-    .audioHint {
-      margin-top: 12px;
-      font-size: 15px;
-      color: var(--sub);
-      line-height: 1.7;
-    }
-
-    .playMark {
-      display: inline-block;
-      min-width: 2.2em;
-      padding: 2px 8px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: #fafafa;
-      font-weight: 700;
-      color: var(--accent);
-    }
-
-    .answerAreaWrap {
-      margin-top: 18px;
-    }
-
-    .sectionLabel {
-      font-size: 13px;
-      color: var(--sub);
-      margin-bottom: 8px;
-    }
-
-    .answerArea {
-      min-height: 112px;
-      border: 2px dashed #cfcfcf;
-      border-radius: 20px;
-      background: #fcfcfc;
-      padding: 12px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-content: flex-start;
-    }
-
-    .answerArea.empty {
-      align-items: center;
-      justify-content: center;
-    }
-
-    .answerArea.empty::before {
-      content: "ここに カードを ならべる";
-      color: #999999;
-      font-size: clamp(16px, 2.5vw, 22px);
-      font-weight: 700;
-    }
-
-    .cards {
-      margin-top: 16px;
-      min-height: 120px;
-      padding: 4px 0 0;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-content: flex-start;
-    }
-
-    .card {
-      appearance: none;
-      border: 1px solid #cfcfcf;
-      background: #ffffff;
-      color: var(--text);
-      border-radius: 16px;
-      padding: 14px 18px;
-      min-width: 88px;
-      font-size: clamp(22px, 3vw, 30px);
-      font-weight: 800;
-      line-height: 1;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.04);
-      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
-      user-select: none;
-    }
-
-    .card:hover {
-      transform: translateY(-1px);
-    }
-
-    .card:active {
-      transform: translateY(1px);
-    }
-
-    .controls {
-      margin-top: 18px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .btn {
-      appearance: none;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: #ffffff;
-      color: var(--text);
-      padding: 12px 16px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.12s ease, opacity 0.12s ease;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .btn:active {
-      transform: translateY(1px);
-    }
-
-    .btnPrimary {
-      background: #111111;
-      color: #ffffff;
-      border-color: #111111;
-    }
-
-    .btn:disabled {
-      opacity: 0.45;
-      cursor: default;
-      transform: none;
-    }
-
-    .feedback {
-      margin-top: 18px;
-      min-height: 64px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: #fafafa;
-      padding: 14px 16px;
-      font-size: 16px;
-      line-height: 1.7;
-    }
-
-    .feedback.good {
-      color: var(--good);
-      background: var(--goodBg);
-      border-color: #b7dfc0;
-    }
-
-    .feedback.bad {
-      color: var(--bad);
-      background: var(--badBg);
-      border-color: #f0c5c5;
-    }
-
-    .footer {
-      margin-top: 14px;
-      text-align: center;
-      color: var(--sub);
-      font-size: 14px;
-      line-height: 1.7;
-    }
-
-    @media (max-width: 640px) {
-      .panel {
-        padding: 16px;
-        border-radius: 20px;
-      }
-
-      .card {
-        min-width: 74px;
-        padding: 12px 14px;
-      }
-
-      .controls {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .controls .btnPrimary {
-        grid-column: 1 / -1;
-      }
-    }
-  </style>
+body.shake{animation:shake .3s;}
+@keyframes shake{
+0%{transform:translateX(0);}
+25%{transform:translateX(-8px);}
+50%{transform:translateX(8px);}
+75%{transform:translateX(-6px);}
+100%{transform:translateX(0);}
+}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="panel">
-      <div class="top">
-        <h1 class="title">えいごカードならべ</h1>
-        <div class="promptLabel">にほんご</div>
-        <p id="jpPrompt" class="prompt">これは わたしの くるまです。</p>
-        <div class="audioHint">
-          英語音声を 自動で 読み上げます。<br>
-          <span class="playMark">Space</span> を押すと 何度でも もう一度 聞けます。
-        </div>
-      </div>
+<div class="wrap">
+<div class="panel">
 
-      <div class="answerAreaWrap">
-        <div class="sectionLabel">ならべた ぶん</div>
-        <div id="answerArea" class="answerArea empty"></div>
-      </div>
+<div class="title">えいごカードならべ</div>
 
-      <div id="cardsArea" class="cards"></div>
+<div id="jp" class="prompt"></div>
+<div class="hint">Spaceで音声 / Enterで判定</div>
 
-      <div class="controls">
-        <button id="undoBtn" class="btn" type="button">ひとつ もどす</button>
-        <button id="resetBtn" class="btn" type="button">やりなおす</button>
-        <button id="checkBtn" class="btn btnPrimary" type="button">判定</button>
-        <button id="nextBtn" class="btn" type="button" disabled>つぎへ</button>
-      </div>
+<div id="answer" class="answer"></div>
+<div id="cards" class="cards"></div>
 
-      <div id="feedback" class="feedback">
-        英語音声を聞いて、カードを正しい順番に並べてください。
-      </div>
+<div id="feedback" class="feedback"></div>
 
-      <div class="footer">
-        カードを押すと上に移動します。<br>
-        上のカードを押すと下に戻せます。
-      </div>
-    </div>
-  </div>
+</div>
+</div>
 
-  <script>
-    const problems = [
-      {
-        jp: "これは わたしの くるまです。",
-        en: ["this", "is", "my", "car"]
-      },
-      {
-        jp: "これは わたしの かばんです。",
-        en: ["this", "is", "my", "bag"]
-      },
-      {
-        jp: "これは わたしの ほんです。",
-        en: ["this", "is", "my", "book"]
-      },
-      {
-        jp: "これは わたしの いぬです。",
-        en: ["this", "is", "my", "dog"]
-      },
-      {
-        jp: "これは わたしの ねこです。",
-        en: ["this", "is", "my", "cat"]
-      },
-      {
-        jp: "これは わたしの じてんしゃです。",
-        en: ["this", "is", "my", "bike"]
-      },
-      {
-        jp: "これは わたしの つくえです。",
-        en: ["this", "is", "my", "desk"]
-      },
-      {
-        jp: "これは わたしの いすです。",
-        en: ["this", "is", "my", "chair"]
-      }
-    ];
+<script>
+const problems = [
+{jp:"これは わたしの くるまです。",en:["this","is","my","car"]},
+{jp:"これは わたしの かばんです。",en:["this","is","my","bag"]},
+{jp:"これは わたしの ほんです。",en:["this","is","my","book"]},
+{jp:"これは わたしの いぬです。",en:["this","is","my","dog"]}
+];
 
-    let currentIndex = 0;
-    let handCards = [];
-    let placedCards = [];
-    let answeredCorrectly = false;
-    let speechReadyTried = false;
+let index=0;
+let hand=[];
+let placed=[];
+let locked=false;
 
-    const jpPromptEl = document.getElementById("jpPrompt");
-    const answerAreaEl = document.getElementById("answerArea");
-    const cardsAreaEl = document.getElementById("cardsArea");
-    const feedbackEl = document.getElementById("feedback");
-    const undoBtn = document.getElementById("undoBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const checkBtn = document.getElementById("checkBtn");
-    const nextBtn = document.getElementById("nextBtn");
+const jpEl=document.getElementById("jp");
+const answerEl=document.getElementById("answer");
+const cardsEl=document.getElementById("cards");
+const feedbackEl=document.getElementById("feedback");
 
-    function shuffle(array) {
-      const arr = [...array];
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
+function shuffle(a){
+return [...a].sort(()=>Math.random()-0.5);
+}
 
-    function currentProblem() {
-      return problems[currentIndex];
-    }
+function speak(){
+if(!speechSynthesis)return;
+speechSynthesis.cancel();
+let u=new SpeechSynthesisUtterance(problems[index].en.join(" "));
+u.lang="en-US";
+speechSynthesis.speak(u);
+}
 
-    function sentenceText(words) {
-      return words.join(" ").trim().toLowerCase();
-    }
+function load(){
+locked=false;
+placed=[];
+hand=shuffle(problems[index].en);
+jpEl.textContent=problems[index].jp;
+render();
+setTimeout(speak,200);
+}
 
-    function triggerShake() {
-      document.body.classList.remove("shake");
-      void document.body.offsetWidth;
-      document.body.classList.add("shake");
-    }
+function render(){
+answerEl.innerHTML="";
+cardsEl.innerHTML="";
 
-    function setFeedback(message, type = "") {
-      feedbackEl.className = "feedback";
-      if (type) feedbackEl.classList.add(type);
-      feedbackEl.innerHTML = message;
-    }
+placed.forEach((w,i)=>{
+let b=document.createElement("div");
+b.className="card";
+b.textContent=w;
+b.onclick=()=>{
+if(locked)return;
+hand.push(w);
+placed.splice(i,1);
+render();
+};
+answerEl.appendChild(b);
+});
 
-    function makeCard(word, source, index) {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "card";
-      btn.textContent = word;
+hand.forEach((w,i)=>{
+let b=document.createElement("div");
+b.className="card";
+b.textContent=w;
+b.onclick=()=>{
+if(locked)return;
+placed.push(w);
+hand.splice(i,1);
+render();
+};
+cardsEl.appendChild(b);
+});
+}
 
-      btn.addEventListener("click", () => {
-        if (answeredCorrectly) return;
+function check(){
+if(locked)return;
 
-        if (source === "hand") {
-          const picked = handCards.splice(index, 1)[0];
-          placedCards.push(picked);
-        } else {
-          const returned = placedCards.splice(index, 1)[0];
-          handCards.push(returned);
-        }
-        render();
-      });
+let correct=problems[index].en.join(" ");
+let now=placed.join(" ");
 
-      return btn;
-    }
+if(now===correct){
+locked=true;
+feedbackEl.textContent="正解";
+setTimeout(()=>{
+index++;
+if(index>=problems.length){
+feedbackEl.textContent="終了";
+return;
+}
+load();
+},600);
+}else{
+feedbackEl.textContent="不正解";
+document.body.classList.remove("shake");
+void document.body.offsetWidth;
+document.body.classList.add("shake");
+}
+}
 
-    function renderAnswerArea() {
-      answerAreaEl.innerHTML = "";
-      if (placedCards.length === 0) {
-        answerAreaEl.classList.add("empty");
-        return;
-      }
+document.addEventListener("keydown",(e)=>{
+if(e.code==="Space"){
+e.preventDefault();
+speak();
+}
+if(e.code==="Enter"){
+check();
+}
+});
 
-      answerAreaEl.classList.remove("empty");
-      placedCards.forEach((word, index) => {
-        answerAreaEl.appendChild(makeCard(word, "placed", index));
-      });
-    }
-
-    function renderCardsArea() {
-      cardsAreaEl.innerHTML = "";
-      handCards.forEach((word, index) => {
-        cardsAreaEl.appendChild(makeCard(word, "hand", index));
-      });
-    }
-
-    function render() {
-      jpPromptEl.textContent = currentProblem().jp;
-      renderAnswerArea();
-      renderCardsArea();
-
-      undoBtn.disabled = answeredCorrectly || placedCards.length === 0;
-      resetBtn.disabled = answeredCorrectly || (placedCards.length === 0 && handCards.length === currentProblem().en.length);
-      checkBtn.disabled = answeredCorrectly;
-      nextBtn.disabled = !answeredCorrectly;
-    }
-
-    function getEnglishVoices() {
-      const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-      return voices.filter(v => (v.lang || "").toLowerCase().startsWith("en"));
-    }
-
-    function speakCurrentSentence() {
-      if (!("speechSynthesis" in window)) {
-        setFeedback("このブラウザでは音声読み上げに対応していません。", "bad");
-        return;
-      }
-
-      const text = currentProblem().en.join(" ");
-      window.speechSynthesis.cancel();
-
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = "en-US";
-      utter.rate = 0.9;
-      utter.pitch = 1.0;
-      utter.volume = 1.0;
-
-      const voices = getEnglishVoices();
-      if (voices.length > 0) {
-        const preferred =
-          voices.find(v => /en-US/i.test(v.lang) && /google|samantha|alex|zira|aria|daniel|serena|karen/i.test(v.name)) ||
-          voices.find(v => /en-US/i.test(v.lang)) ||
-          voices[0];
-        utter.voice = preferred;
-      }
-
-      window.speechSynthesis.speak(utter);
-    }
-
-    function tryInitialSpeech() {
-      if (speechReadyTried) return;
-      speechReadyTried = true;
-
-      if ("speechSynthesis" in window) {
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length === 0) {
-          setTimeout(speakCurrentSentence, 250);
-        } else {
-          speakCurrentSentence();
-        }
-      }
-    }
-
-    function loadProblem() {
-      answeredCorrectly = false;
-      placedCards = [];
-      handCards = shuffle(currentProblem().en);
-      render();
-      setFeedback("英語音声を聞いて、カードを正しい順番に並べてください。");
-      setTimeout(() => {
-        speakCurrentSentence();
-      }, 250);
-    }
-
-    function checkAnswer() {
-      if (answeredCorrectly) return;
-
-      const target = sentenceText(currentProblem().en);
-      const current = sentenceText(placedCards);
-
-      if (placedCards.length !== currentProblem().en.length) {
-        setFeedback("カードの枚数が足りません。全部並べてから判定してください。", "bad");
-        triggerShake();
-        return;
-      }
-
-      if (current === target) {
-        answeredCorrectly = true;
-        render();
-        setFeedback("正解です。", "good");
-      } else {
-        setFeedback("不正解です。もう一度 音声を聞いて並べてください。", "bad");
-        triggerShake();
-      }
-    }
-
-    function nextProblem() {
-      if (!answeredCorrectly) return;
-
-      currentIndex++;
-
-      if (currentIndex >= problems.length) {
-        currentIndex = problems.length - 1;
-        answerAreaEl.innerHTML = "";
-        answerAreaEl.classList.add("empty");
-        cardsAreaEl.innerHTML = "";
-        undoBtn.disabled = true;
-        resetBtn.disabled = true;
-        checkBtn.disabled = true;
-        nextBtn.disabled = true;
-        setFeedback("最後まで終了しました。ページを再読み込みすると最初からもう一度できます。", "good");
-        return;
-      }
-
-      loadProblem();
-    }
-
-    undoBtn.addEventListener("click", () => {
-      if (placedCards.length === 0 || answeredCorrectly) return;
-      const last = placedCards.pop();
-      handCards.push(last);
-      render();
-    });
-
-    resetBtn.addEventListener("click", () => {
-      if (answeredCorrectly) return;
-      handCards = shuffle([...currentProblem().en]);
-      placedCards = [];
-      render();
-      setFeedback("並びをリセットしました。");
-    });
-
-    checkBtn.addEventListener("click", checkAnswer);
-    nextBtn.addEventListener("click", nextProblem);
-
-    document.addEventListener("keydown", (event) => {
-      if (event.code === "Space") {
-        event.preventDefault();
-        speakCurrentSentence();
-      }
-    });
-
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.onvoiceschanged = () => {
-        if (!speechReadyTried) {
-          tryInitialSpeech();
-        }
-      };
-    }
-
-    document.addEventListener("click", () => {
-      if (!speechReadyTried) {
-        tryInitialSpeech();
-      }
-    }, { once: true });
-
-    document.addEventListener("keydown", () => {
-      if (!speechReadyTried) {
-        tryInitialSpeech();
-      }
-    }, { once: true });
-
-    loadProblem();
-  </script>
+load();
+</script>
 </body>
 </html>
